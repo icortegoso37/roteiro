@@ -2215,8 +2215,6 @@ function renderEstacionsConsumo(repos,viaxes){
     const c=consumos[cheos[i].km];
     if(c)est[getEstacion(cheos[i].data)].push(c);
   }
-  // También OBD
-  viaxes.filter(v=>v.consumoMedio>0).forEach(v=>est[getEstacion(v.started)].push(v.consumoMedio));
   const grid=document.getElementById('estacionGrid');
   const entries=Object.entries(est).filter(([_,v])=>v.length>0);
   if(!entries.length){grid.innerHTML='<p style="color:var(--text3);font-size:.78rem;grid-column:1/-1">Sen datos suficientes por estación aínda</p>';return;}
