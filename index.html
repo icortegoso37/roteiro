@@ -321,15 +321,15 @@ h1.print-title{display:none}
     min-height:100dvh!important;
   }
 
-  /* Dashboard: grid de 2 columnas fijas, sin scroll */
+  /* Dashboard: grid optimizado para iPhone 13 Pro Max */
   #obd-dashboard{
     display:grid!important;
-    grid-template-columns: 38% 1fr 1fr!important;
-    grid-template-rows: 1fr 1fr!important;
-    gap:5px!important;
-    padding: 5px env(safe-area-inset-left,10px) 5px env(safe-area-inset-right,10px)!important;
+    grid-template-columns: 40% 1fr 1fr!important;
+    grid-template-rows: auto 1fr 1fr!important;
+    gap:6px!important;
+    padding: 6px env(safe-area-inset-left,10px) 6px env(safe-area-inset-right,10px)!important;
     height:100dvh!important;
-    overflow:hidden!important;      /* Sin scroll: todo visible de un tirón */
+    overflow:hidden!important;
     box-sizing:border-box!important;
     align-items:stretch!important;
   }
@@ -337,40 +337,52 @@ h1.print-title{display:none}
   /* Topbar: más compacto */
   #obd-dashboard > div:first-child{
     grid-column: 1 / -1!important;
-    padding:3px 10px!important;
+    grid-row: 1!important;
+    padding:4px 10px!important;
     flex-shrink:0!important;
   }
 
-  /* Barra de edición: oculta en landscape para no romper el layout */
+  /* Temperatura ambiente en topbar: más visible */
+  #dash-temp-amb{
+    font-size:.85rem!important;
+    color:var(--accent)!important;
+    font-weight:600!important;
+  }
+
+  /* Barra de edición: oculta en landscape */
   #dash-edit-bar{display:none!important}
 
   /* VELOCIDAD: columna izquierda, ambas filas */
   #obd-dashboard [data-card-id="vel"]{
     grid-column:1!important;
-    grid-row:1 / 3!important;
+    grid-row:2 / 4!important;
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
     flex-direction:column!important;
-    padding:6px!important;
+    padding:10px!important;
   }
-  /* Número velocidad grande */
+  /* Número velocidad GRANDE (3x) */
   #obd-dashboard [data-card-id="vel"] #dash-vel{
-    font-size:5.5rem!important;
+    font-size:8rem!important;
     line-height:1!important;
+    font-weight:200!important;
+  }
+  #obd-dashboard [data-card-id="vel"] > div > div:last-child{
+    font-size:.85rem!important;
+    margin-top:8px!important;
   }
 
   /* RPM + TEMP: columna central, fila superior */
   #obd-dashboard [data-card-id="rpm-temp"]{
     grid-column:2!important;
-    grid-row:1!important;
+    grid-row:2!important;
     overflow:hidden!important;
-    padding:4px 6px!important;
+    padding:6px!important;
   }
-  /* El grid interno de rpm-temp en landscape */
   #obd-dashboard [data-card-id="rpm-temp"] > div{
     grid-template-columns:1fr 1fr!important;
-    gap:4px!important;
+    gap:6px!important;
     padding:0!important;
     margin:0!important;
   }
@@ -378,64 +390,71 @@ h1.print-title{display:none}
   /* CONSUMO: columna derecha, fila superior */
   #obd-dashboard [data-card-id="consumo"]{
     grid-column:3!important;
-    grid-row:1!important;
+    grid-row:2!important;
     overflow:hidden!important;
-    padding:4px 6px!important;
+    padding:6px!important;
   }
   #obd-dashboard [data-card-id="consumo"] > div{
-    grid-template-columns:1fr!important;
-    gap:3px!important;
+    grid-template-columns:1fr 1fr!important;
+    grid-template-rows:1fr 1fr!important;
+    gap:6px!important;
     padding:0!important;
     margin:0!important;
   }
 
-  /* TOTAL (litros+cutoff): columna central, fila inferior */
+  /* TOTAL: columnas 2-3, fila inferior */
   #obd-dashboard [data-card-id="total"]{
-    grid-column:2!important;
-    grid-row:2!important;
+    grid-column:2 / 4!important;
+    grid-row:3!important;
     overflow:hidden!important;
-    padding:4px 6px!important;
+    padding:6px!important;
   }
   #obd-dashboard [data-card-id="total"] > div{
-    gap:4px!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
     padding:0!important;
     margin:0!important;
   }
 
-  /* CUTOFF (indicador verde): integrado en columna derecha fila inferior */
-  #obd-dashboard [data-card-id="cutoff"]{
-    grid-column:3!important;
-    grid-row:2!important;
-    overflow:hidden!important;
-    padding:4px 6px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
+  /* Tarjetas sc: números 3x más grandes */
+  .dash-card .sc{
+    padding:8px 6px!important;
+    border-radius:10px!important;
+  }
+  .dash-card .sc .lbl{
+    font-size:.55rem!important;
+    letter-spacing:.04em!important;
+    margin-bottom:4px!important;
+  }
+  .dash-card .sc .val{
+    font-size:2.5rem!important;
+    line-height:1!important;
+    font-weight:400!important;
   }
 
-  /* Botón parar: siempre visible, ocupa fila inferior completa */
-  #obd-stop-btn{
-    display:none!important;  /* Ocultamos el botón grande inline */
-  }
-  /* Usamos el botón del banner (obdStopBtn) que queda visible por el obd-live */
-
-  /* Tipografía reducida para que quepa todo */
-  .dash-card .sc .lbl{font-size:.5rem!important;letter-spacing:.04em!important}
-  .dash-card .sc .val{font-size:1rem!important;line-height:1.1!important}
-  .dash-card .sc{padding:6px 5px!important;border-radius:8px!important}
-
-  /* Indicador cutoff activo más compacto */
+  /* Indicador cutoff activo más visible */
   #dash-cutoff-active{
-    margin:2px 6px!important;
-    padding:5px 8px!important;
-    font-size:.65rem!important;
+    display:none!important; /* Ocultamos en landscape para ahorrar espacio */
   }
-  #dash-cutoff-active > div:first-child{font-size:.8rem!important}
 
-  /* Botón parar flotante en esquina inferior derecha */
-  #obd-dashboard::after{
-    content:'';
-    display:none;
+  /* Botón parar portrait: oculto en landscape */
+  .obd-stop-portrait{
+    display:none!important;
+  }
+
+  /* Botón parar landscape: visible y funcional */
+  #obd-stop-landscape{
+    display:block!important;
+  }
+
+  /* Botones de ocultar: más pequeños en landscape */
+  .dash-hide-btn{
+    width:16px!important;
+    height:16px!important;
+    font-size:.7rem!important;
+    line-height:16px!important;
+    top:3px!important;
+    left:6px!important;
   }
 }
 
@@ -648,149 +667,148 @@ h1.print-title{display:none}
 
 
   <!-- OBD DASHBOARD -->
-  <div class="view" id="view-obd" style="padding:0;margin:-14px -16px;min-height:calc(100dvh - 68px - var(--sbot))">
-    <div id="obd-connect-screen" style="padding:20px 18px;padding-top:20px;flex:1;display:flex;flex-direction:column">
-      <div class="md-title">OBD2 en tempo real</div>
-      <div class="obd-status">
-        <div class="obd-status-ico" id="obd-ico">🔌</div>
-        <div class="obd-status-t" id="obd-t">Listo para conectar</div>
-        <div class="obd-status-s" id="obd-s">Adaptador ELM327 BLE acendido e coche en contacto.</div>
-      </div>
-      
-      <button class="btn-p btn-green" id="obd-connect-btn" onclick="obdConectar()"
-
- style="margin-top:auto">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        Conectar OBD II ELM327
-      </button>
-
-      <!-- NUEVO BOTÓN DTC AQUÍ -->
-      <button class="btn-s" onclick="abrirDiagnosis()" style="margin-top:12px; border-color:var(--purple); color:var(--purple); background:var(--pdim)">
-        🩺 Diagnosis de Fallos (DTC)
-      </button>
-
-      <p style="font-size:.65rem;color:var(--text3);font-family:var(--font-m);text-align:center;margin-top:8px">HM-10 · 0xFFE0/0xFFE1 · BLE 4.0</p>
+<div class="view" id="view-obd" style="padding:0;margin:-14px -16px;min-height:calc(100dvh - 68px - var(--sbot))">
+  <div id="obd-connect-screen" style="padding:20px 18px;padding-top:20px;flex:1;display:flex;flex-direction:column">
+    <div class="md-title">OBD2 en tempo real</div>
+    <div class="obd-status">
+      <div class="obd-status-ico" id="obd-ico">🔌</div>
+      <div class="obd-status-t" id="obd-t">Listo para conectar</div>
+      <div class="obd-status-s" id="obd-s">Adaptador ELM327 BLE acendido e coche en contacto.</div>
     </div>
 
-    <!-- DASHBOARD EN VIVO -->
-    <div id="obd-dashboard" style="display:none;flex:1;flex-direction:column;padding-bottom:var(--sbot);overflow-y:auto">
+    <button class="btn-p btn-green" id="obd-connect-btn" onclick="obdConectar()" style="margin-top:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      Conectar OBD II ELM327
+    </button>
 
-      <!-- TOPBAR -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:calc(10px + var(--stop));background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite"></div>
-          <span style="font-family:var(--font-m);font-size:.7rem;color:var(--green)">OBD CONECTADO</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="dashToggleEdit()" id="dash-edit-btn" style="background:none;border:none;color:var(--text3);font-size:.65rem;font-family:var(--font-m);cursor:pointer;padding:4px 8px;border-radius:var(--rsm);border:1px solid var(--border)">✏ Editar</button>
-          <span id="dash-hora" style="font-family:var(--font-m);font-size:.75rem;color:var(--text2)">00:00</span>
-          <span style="color:var(--border2)">·</span>
-          <span id="dash-dur" style="font-family:var(--font-m);font-size:.75rem;color:var(--text2)">0:00</span>
-        </div>
-      </div>
+    <button class="btn-s" onclick="abrirDiagnosis()" style="margin-top:12px; border-color:var(--purple); color:var(--purple); background:var(--pdim)">
+      🩺 Diagnosis de Fallos (DTC)
+    </button>
 
-      <!-- EDIT BAR -->
-      <div id="dash-edit-bar" class="dash-edit-bar">
-        <span style="font-size:.68rem;font-family:var(--font-m);color:var(--accent);flex:1">Arrastra para reordenar · − para ocultar</span>
-        <button onclick="dashMostrarOcultas()" style="background:var(--aglow2);border:1px solid rgba(91,138,240,.3);color:var(--accent);border-radius:var(--rsm);padding:4px 10px;font-size:.68rem;font-family:var(--font-m);cursor:pointer">Restaurar</button>
-        <button onclick="dashToggleEdit()" style="background:var(--accent2);border:none;color:white;border-radius:var(--rsm);padding:4px 10px;font-size:.68rem;font-family:var(--font-m);font-weight:600;cursor:pointer">Listo</button>
+    <p style="font-size:.65rem;color:var(--text3);font-family:var(--font-m);text-align:center;margin-top:8px">HM-10 · 0xFFE0/0xFFE1 · BLE 4.0</p>
+  </div>
+
+  <!-- DASHBOARD EN VIVO -->
+  <div id="obd-dashboard" style="display:none;flex:1;flex-direction:column;padding-bottom:var(--sbot);overflow-y:auto">
+
+    <!-- TOPBAR -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:calc(10px + var(--stop));background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite"></div>
+        <span style="font-family:var(--font-m);font-size:.7rem;color:var(--green)">OBD CONECTADO</span>
       </div>
-      <!-- VELOCIDADE grande -->
-      <div data-card-id="vel" class="dash-card" style="position:relative">
+      <div style="display:flex;align-items:center;gap:6px">
+  <button onclick="dashToggleEdit()" id="dash-edit-btn" style="background:none;border:none;color:var(--text3);font-size:.65rem;font-family:var(--font-m);cursor:pointer;padding:4px 8px;border-radius:var(--rsm);border:1px solid var(--border)">✏</button>
+  <span id="dash-hora" style="font-family:var(--font-m);font-size:.75rem;color:var(--text2)">00:00</span>
+  <span style="color:var(--border2)">·</span>
+  <span id="dash-temp-amb" style="font-family:var(--font-m);font-size:.75rem;color:var(--text2)">—°C</span>
+  <span style="color:var(--border2)">·</span>
+  <span id="dash-km-total" style="font-family:var(--font-m);font-size:.75rem;color:var(--accent);font-weight:600">0.0 km</span>
+</div>
+    </div>
+
+    <!-- EDIT BAR -->
+    <div id="dash-edit-bar" class="dash-edit-bar">
+      <span style="font-size:.68rem;font-family:var(--font-m);color:var(--accent);flex:1">Arrastra para reordenar · − para ocultar</span>
+      <button onclick="dashMostrarOcultas()" style="background:var(--aglow2);border:1px solid rgba(91,138,240,.3);color:var(--accent);border-radius:var(--rsm);padding:4px 10px;font-size:.68rem;font-family:var(--font-m);cursor:pointer">Restaurar</button>
+      <button onclick="dashToggleEdit()" style="background:var(--accent2);border:none;color:white;border-radius:var(--rsm);padding:4px 10px;font-size:.68rem;font-family:var(--font-m);font-weight:600;cursor:pointer">Listo</button>
+    </div>
+
+    <!-- VELOCIDADE grande -->
+    <div data-card-id="vel" class="dash-card" style="position:relative">
+      <button class="dash-hide-btn" onclick="dashHideCard('vel')">−</button>
       <div style="text-align:center;padding:18px 16px 10px;flex-shrink:0">
         <div style="font-family:var(--font-m);font-size:5rem;font-weight:300;line-height:1;color:var(--text);letter-spacing:-.04em" id="dash-vel">0</div>
         <div style="font-size:.7rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">km/h</div>
-        <button class="dash-hide-btn" onclick="dashHideCard('vel')">−</button>
-      </div></div>
-
-      <!-- CUTOFF INDICATOR -->
-      <div id="dash-cutoff-active" style="display:none;margin:0 14px 10px;padding:10px 14px;background:linear-gradient(135deg,rgba(62,207,130,.2),rgba(62,207,130,.08));border:1px solid rgba(62,207,130,.5);border-radius:var(--rsm);text-align:center;animation:cutoffPulse 1s infinite">
-        <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:var(--green)">⚡ CORTE COMBUSTIBLE</div>
-        <div style="font-size:.68rem;color:var(--green);font-family:var(--font-m);margin-top:2px">Motor freando sen gastar · Levanta o pé</div>
       </div>
-      <style>@keyframes cutoffPulse{0%,100%{border-color:rgba(62,207,130,.5)}50%{border-color:rgba(62,207,130,1)}}</style>
+    </div>
 
-      <div data-card-id="cutoff" class="dash-card" style="position:relative"><button class="dash-hide-btn" onclick="dashHideCard('cutoff')">−</button>
-      <!-- FILA RPM + TEMP placeholder --></div>
-      <div data-card-id="rpm-temp" class="dash-card" style="position:relative"><button class="dash-hide-btn" onclick="dashHideCard('rpm-temp')">−</button>
+    <!-- CUTOFF INDICATOR -->
+    <div id="dash-cutoff-active" style="display:none;margin:0 14px 10px;padding:10px 14px;background:linear-gradient(135deg,rgba(62,207,130,.2),rgba(62,207,130,.08));border:1px solid rgba(62,207,130,.5);border-radius:var(--rsm);text-align:center;animation:cutoffPulse 1s infinite">
+      <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:var(--green)">⚡ CORTE COMBUSTIBLE</div>
+      <div style="font-size:.68rem;color:var(--green);font-family:var(--font-m);margin-top:2px">Motor freando sen gastar · Levanta o pé</div>
+    </div>
+    <style>@keyframes cutoffPulse{0%,100%{border-color:rgba(62,207,130,.5)}50%{border-color:rgba(62,207,130,1)}}</style>
+
+    <!-- RPM + TEMP -->
+    <div data-card-id="rpm-temp" class="dash-card" style="position:relative">
+      <button class="dash-hide-btn" onclick="dashHideCard('rpm-temp')">−</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;margin-bottom:8px;flex-shrink:0">
-
         <!-- RPM -->
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 10px" id="dash-rpm-card">
-          <div style="font-size:.58rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">RPM</div>
-          <div style="font-family:var(--font-m);font-size:1.8rem;font-weight:400;line-height:1;color:var(--text)" id="dash-rpm">0</div>
-          <!-- Barra RPM visual -->
+        <div class="sc">
+          <div class="lbl">RPM</div>
+          <div class="val" id="dash-rpm">0</div>
           <div style="height:3px;background:var(--border2);border-radius:2px;margin:6px 0 5px;overflow:hidden">
             <div id="dash-rpm-bar" style="height:100%;border-radius:2px;background:var(--green);width:0%;transition:width .4s ease"></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.58rem;font-family:var(--font-m);color:var(--text3)">
-            <span>↓<span id="dash-rpm-min" style="color:var(--text2)">—</span></span>
-            <span>⌀<span id="dash-rpm-med" style="color:var(--text2)">—</span></span>
-            <span>↑<span id="dash-rpm-max" style="color:var(--red)">—</span></span>
+            <span>↓<span id="dash-rpm-min">—</span></span>
+            <span>⌀<span id="dash-rpm-med">—</span></span>
+            <span>↑<span id="dash-rpm-max">—</span></span>
           </div>
         </div>
 
         <!-- TEMPERATURA -->
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 10px" id="dash-temp-card">
-          <div style="font-size:.58rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Refrixerante</div>
-          <div style="font-family:var(--font-m);font-size:1.8rem;font-weight:400;line-height:1" id="dash-temp" style="color:var(--text)">—</div>
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);margin:4px 0 2px">°C</div>
-          <!-- Barra temp visual: azul→verde→naranja→rojo -->
-          <div style="height:3px;background:var(--border2);border-radius:2px;margin:2px 0 5px;overflow:hidden">
+        <div class="sc">
+          <div class="lbl">Refrixerante</div>
+          <div class="val" id="dash-temp">—°C</div>
+          <div style="height:3px;background:var(--border2);border-radius:2px;margin:6px 0 5px;overflow:hidden">
             <div id="dash-temp-bar" style="height:100%;border-radius:2px;width:0%;transition:width .6s ease,background .6s ease"></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.58rem;font-family:var(--font-m);color:var(--text3)">
-            <span>↓<span id="dash-temp-min" style="color:var(--text2)">—</span></span>
-            <span>⌀<span id="dash-temp-med" style="color:var(--text2)">—</span></span>
-            <span>↑<span id="dash-temp-max" style="color:var(--red)">—</span></span>
+            <span>↓<span id="dash-temp-min">—</span></span>
+            <span>⌀<span id="dash-temp-med">—</span></span>
+            <span>↑<span id="dash-temp-max">—</span></span>
           </div>
         </div>
-      </div></div>
+      </div>
+    </div>
 
-      <div data-card-id="consumo" class="dash-card" style="position:relative"><button class="dash-hide-btn" onclick="dashHideCard('consumo')">−</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 14px;margin-bottom:8px;flex-shrink:0">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px;text-align:center">
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Inst L/100</div>
-          <div style="font-family:var(--font-m);font-size:1.2rem;font-weight:500;line-height:1" id="dash-cons-inst">—</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px;text-align:center">
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Medio L/100</div>
-          <div style="font-family:var(--font-m);font-size:1.2rem;font-weight:500;line-height:1" id="dash-cons-med">—</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px;text-align:center">
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Acum L</div>
-          <div style="font-family:var(--font-m);font-size:1.2rem;font-weight:500;line-height:1" id="dash-cons-acum">—</div>
-        </div>
-      </div></div>
+    <!-- CONSUMO (2 filas en landscape) -->
+    <div data-card-id="consumo" class="dash-card" style="position:relative">
+      <button class="dash-hide-btn" onclick="dashHideCard('consumo')">−</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;margin-bottom:8px;flex-shrink:0">
+        <div class="sc"><div class="lbl">Inst L/100</div><div class="val" id="dash-cons-inst">—</div></div>
+        <div class="sc"><div class="lbl">Medio L/100</div><div class="val" id="dash-cons-med">—</div></div>
+        <div class="sc" style="grid-column:1/-1"><div class="lbl">Acumulado L</div><div class="val" id="dash-cons-acum">—</div></div>
+      </div>
+    </div>
 
-      <div data-card-id="total" class="dash-card" style="position:relative"><button class="dash-hide-btn" onclick="dashHideCard('total')">−</button>
+    <!-- TOTAL + CUTOFF -->
+    <div data-card-id="total" class="dash-card" style="position:relative">
+      <button class="dash-hide-btn" onclick="dashHideCard('total')">−</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;margin-bottom:12px;flex-shrink:0">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px">
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Total trayecto</div>
+        <div class="sc">
+          <div class="lbl">Total trayecto</div>
           <div style="font-family:var(--font-m);font-size:1rem;font-weight:500" id="dash-total-l">— L</div>
           <div style="font-family:var(--font-m);font-size:.85rem;color:var(--orange)" id="dash-total-eur">— €</div>
         </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px" id="dash-cutoff-card">
-          <div style="font-size:.55rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Tempo corte comb.</div>
-          <div style="font-family:var(--font-m);font-size:1rem;font-weight:500;color:var(--green)" id="dash-cutoff-time">0:00</div>
-          <div style="font-size:.6rem;color:var(--text3);font-family:var(--font-m)" id="dash-cutoff-pct">0% do trayecto</div>
-        </div>
-      </div></div>
-
-      <!-- BOTÓN PARAR (portrait) -->
-      <div style="padding:0 14px;flex-shrink:0" class="obd-stop-portrait">
-        <button id="obd-stop-btn" onclick="obdDesconectar()" style="width:100%;padding:13px;background:var(--rdim);border:1px solid rgba(232,85,85,.3);border-radius:var(--rsm);color:var(--red);font-family:var(--font-b);font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-          Terminar sesión e gardar viaxe
-        </button>
-      </div>
-      <!-- BOTÓN PARAR LANDSCAPE (esquina superior derecha, solo visible en horizontal) -->
-      <button id="obd-stop-landscape" onclick="obdDesconectar()" style="display:none;position:fixed;top:6px;right:calc(env(safe-area-inset-right,10px) + 6px);z-index:200;padding:4px 10px;background:var(--rdim);border:1px solid rgba(232,85,85,.4);border-radius:20px;color:var(--red);font-family:var(--font-m);font-size:.65rem;font-weight:600;cursor:pointer">
-        ■ Parar
-      </button>
-
-    </div><!-- /dashboard -->
+        <div class="sc">
+  <div class="lbl">Tempo corte comb.</div>
+  <div style="font-family:var(--font-m);font-size:1rem;font-weight:500;color:var(--green)" id="dash-cutoff-time">0:00</div>
+  <div style="font-size:.6rem;color:var(--text3);font-family:var(--font-m)" id="dash-cutoff-pct">0% do trayecto</div>
+  <div style="font-size:.7rem;color:var(--text2);font-family:var(--font-m);margin-top:6px;padding-top:6px;border-top:1px solid var(--border2)">
+    <span style="color:var(--text3)">Duración:</span> <span id="dash-dur-cutoff" style="font-weight:600">0:00</span>
   </div>
+</div>
+      </div>
+    </div>
+
+    <!-- BOTÓN PARAR (portrait) -->
+    <div style="padding:0 14px;flex-shrink:0" class="obd-stop-portrait">
+      <button id="obd-stop-btn" onclick="obdDesconectar()" style="width:100%;padding:13px;background:var(--rdim);border:1px solid rgba(232,85,85,.3);border-radius:var(--rsm);color:var(--red);font-family:var(--font-b);font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        Terminar sesión e gardar viaxe
+      </button>
+    </div>
+
+    <!-- BOTÓN PARAR LANDSCAPE (esquina superior derecha) -->
+    <button id="obd-stop-landscape" onclick="obdDesconectar()" style="display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,10px) + 6px);z-index:200;padding:6px 12px;background:var(--rdim);border:1px solid rgba(232,85,85,.4);border-radius:20px;color:var(--red);font-family:var(--font-m);font-size:.7rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+      ■ Parar
+    </button>
+
+  </div><!-- /dashboard -->
+</div><!-- /view-obd -->
 
 </main>
 
@@ -1494,13 +1512,32 @@ async function borrarRepo(id){
 function calcularConsumos(repos){
   const res={};
   const cheos=repos.filter(r=>r.cheo==='si').sort((a,b)=>a.km-b.km);
+
+  console.log('🔍 CALCULANDO CONSUMOS POR TRAMO');
+  console.log('Total repostajes llenos:', cheos.length);
+
   for(let i=1;i<cheos.length;i++){
     const ant=cheos[i-1],act=cheos[i];
     const inter=repos.filter(r=>r.km>ant.km&&r.km<=act.km);
     const lit=inter.reduce((s,r)=>s+r.litros,0);
     const km=act.km-ant.km;
-    if(km>0&&lit>0)res[act.km]=(lit/km)*100;
+    const consumo = (km>0&&lit>0) ? (lit/km)*100 : 0;
+
+    // 🔍 LOG DETALLADO
+    console.log(`\n📍 TRAMO ${i}:`);
+    console.log(`  De: ${ant.km} km (${ant.data})`);
+    console.log(`  A:  ${act.km} km (${act.data})`);
+    console.log(`  Distancia: ${km} km`);
+    console.log(`  Repostajes incluidos: ${inter.length}`);
+    inter.forEach(r => {
+      console.log(`    - ${r.data}: ${r.litros.toFixed(2)} L en ${r.km} km (${r.cheo})`);
+    });
+    console.log(`  Total litros: ${lit.toFixed(2)} L`);
+    console.log(`  Consumo: ${consumo.toFixed(2)} L/100`);
+
+    if(km>0&&lit>0) res[act.km]=consumo;
   }
+
   return res;
 }
 
@@ -2019,18 +2056,19 @@ async function procesarInfocar(input) {
       const distancia = parseFloat(info[3] && info[3][3]) || 0;
 
       // Scores y eventos
-      const scoreSeguridade = parseFloat(info[6] && info[6][0]) || null;
-      const scoreEconomico = parseFloat(info[6] && info[6][1]) || null;
-      const eficienciaCombustible = parseFloat(info[6] && info[6][2]) || null;
-      const combustibleConsumido = parseFloat(info[6] && info[6][3]) || null;
-      const desaceleraciónBrusca = parseInt(info[7] && info[7][0]) || 0;
-      const aceleraciónBrusca = parseInt(info[7] && info[7][1]) || 0;
-      const excesoVelocidade = parseInt(info[7] && info[7][2]) || 0;
-      const maxTempRefrigerante = parseFloat(info[7] && info[7][3]) || 0;
-      const velMedia = parseFloat(info[9] && info[9][0]) || 0;
-      const velMaxima = parseFloat(info[9] && info[9][1]) || 0;
-      const rpmMedia = parseFloat(info[9] && info[9][2]) || 0;
-      const rpmMaxima = parseFloat(info[9] && info[9][3]) || 0;
+      // ✅ ÍNDICES CORREGIDOS según la estructura real del Excel
+const scoreSeguridade = parseFloat(info[7] && info[7][0]) || null;
+const scoreEconomico = parseFloat(info[7] && info[7][1]) || null;
+const eficienciaCombustible = parseFloat(info[7] && info[7][2]) || null;
+const combustibleConsumido = parseFloat(info[7] && info[7][3]) || null;
+const desaceleraciónBrusca = parseInt(info[10] && info[10][0]) || 0;
+const aceleraciónBrusca = parseInt(info[10] && info[10][1]) || 0;
+const excesoVelocidade = parseInt(info[10] && info[10][2]) || 0;
+const maxTempRefrigerante = parseFloat(info[10] && info[10][3]) || 0;
+const velMedia = parseFloat(info[13] && info[13][0]) || 0;
+const velMaxima = parseFloat(info[13] && info[13][1]) || 0;
+const rpmMedia = parseFloat(info[13] && info[13][2]) || 0;
+const rpmMaxima = parseFloat(info[13] && info[13][3]) || 0;
 
       // Validación de duplicados individual
       const startKey = horaSalida || new Date().toISOString();
@@ -2588,6 +2626,15 @@ const OBD_CUTOFF_MAF = 2.0; // g/s umbral MAF para considerar corte
 let obdDevice=null, obdChar=null, obdSesion=null, obdTimer=null;
 const OBD_SERVICE='0000ffe0-0000-1000-8000-00805f9b34fb';
 const OBD_CHAR  ='0000ffe1-0000-1000-8000-00805f9b34fb';
+// ✅ QUEUE DE COMANDOS CON TEMPERATURA AMBIENTE
+const OBD_CMD_QUEUE = [
+  '01 0D', // Velocidad
+  '01 0C', // RPM
+  '01 10', // MAF
+  '01 11', // Posición acelerador
+  '01 05', // Temperatura refrigerante
+  '01 46'  // Temperatura ambiente
+];
 
 // Screen Wake Lock
    let _wakeLock=null;
@@ -2667,7 +2714,6 @@ let obdPrecioLitro=1.60; // default, se actualiza al conectar
 
 // Cola de comandos OBD (rotación)
 // 010D=vel, 010C=rpm, 0105=temp_refri, 0110=MAF
-const OBD_CMD_QUEUE=['010D','010C','0111','0110','0105','010D','010C','0111','0110'];
 let obdQIdx=0;
 let obdPendingPid=null;
 
@@ -2789,11 +2835,22 @@ function obdTickSecundo(){
   if(!obdStartTime)return;
   const sec=Math.floor((new Date()-obdStartTime)/1000);
 
-  // Duración
+// Duración (ahora en tarjeta cutoff)
   const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
-  document.getElementById('dash-dur').textContent=
-    h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-      :`${m}:${String(s).padStart(2,'0')}`;
+  const durStr = h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`;
+  const durEl = document.getElementById('dash-dur-cutoff');
+  if(durEl) durEl.textContent = durStr;
+
+  // Calcular km totales desde GPS
+  let distTotal = 0;
+  const gps = obdSesion.gpsPoints;
+  if(gps.length > 1) {
+    for(let i=1; i<gps.length; i++) {
+      distTotal += haversine(gps[i-1], gps[i]);
+    }
+  }
+  const kmEl = document.getElementById('dash-km-total');
+  if(kmEl) kmEl.textContent = `${distTotal.toFixed(1)} km`;
 
   // Corte combustible: acumular si estamos en cutoff
   if(obdEnCutoff)obdCutoffSecs++;
@@ -2820,6 +2877,8 @@ function obdTickSecundo(){
       cons:obdConsActual,temp:obdTempActual
     });
   }
+  // Actualizar litros acumulados en dashboard
+  document.getElementById('dash-cons-acum').textContent = obdLitrosTotais.toFixed(2);
 }
 
 let obdIsRequesting = false;
@@ -2887,7 +2946,7 @@ function parseOBDLine(line){
  if(pid==='0D'){
     // Velocidad km/h
     obdVelActual=a;
-    if(a > obdVelMax) obdVelMax = a; // <--- AÑADE ESTA LÍNEA
+    if(a > obdVelMax) obdVelMax = a; 
     if(a>0){obdVelAcc+=a;obdVelCnt++;}
     d('dash-vel',a);
     // Color velocidad
@@ -2913,6 +2972,14 @@ function parseOBDLine(line){
     if(rpmBar){
       rpmBar.style.width=rpmPct+'%';
       rpmBar.style.background=rpmPct>85?'var(--red)':rpmPct>70?'var(--orange)':'var(--green)';
+    } else if(pid==='46'){
+    // Temperatura ambiente = A - 40
+    const tempAmb = a - 40;
+    const el = document.getElementById('dash-temp-amb');
+    if(el && tempAmb > -40) {
+      el.textContent = `${tempAmb}°C`;
+      el.style.color = tempAmb < 0 ? 'var(--accent)' : tempAmb > 30 ? 'var(--orange)' : 'var(--text2)';
+    }
     }
     // Card RPM color si zona roja
     const rpmCard=document.getElementById('dash-rpm-card');
@@ -2989,8 +3056,23 @@ function parseOBDLine(line){
     // DETECCIÓN CUTOFF AFINADA PARA ASTRA H (Z16XEP)
     // El acelerador en reposo está ~18%. Usamos < 22% como margen seguro.
     // Además, exigimos ir a más de 5km/h y por encima del ralentí (>1100 RPM).
-    const enCutoff = obdRpmActual > 1100 && obdThrottleActual < 22.0 && obdVelActual > 5;
-    obdEnCutoff = enCutoff;
+    // DETECCIÓN CUTOFF MEJORADA CON ANTI-REBOTE
+const cutoffDetectado = obdRpmActual > 1100 && obdThrottleActual < 22.0 && obdVelActual > 5;
+
+// Anti-rebote: solo activar si se mantiene 2 segundos
+if(!window._cutoffDebounce) window._cutoffDebounce = { count: 0, active: false };
+
+if(cutoffDetectado) {
+  _cutoffDebounce.count++;
+  if(_cutoffDebounce.count >= 4 && !_cutoffDebounce.active) { // 4 ciclos ≈ 2 seg
+    _cutoffDebounce.active = true;
+    obdEnCutoff = true;
+  }
+} else {
+  _cutoffDebounce.count = 0;
+  _cutoffDebounce.active = false;
+  obdEnCutoff = false;
+}
 
     // Indicador cutoff visual
     const cutEl=document.getElementById('dash-cutoff-active');
@@ -3460,7 +3542,16 @@ async function analizarRutas(){
 
   const html2=grupos.slice(0,5).map((grupo,idx)=>{
     const distMediaKm=grupo.reduce((s,v)=>s+(v.distancia||0),0)/grupo.length;
-    const consMedia=grupo.filter(v=>v.consumoMedio>0).reduce((s,v,_,arr)=>s+v.consumoMedio/arr.length,0);
+
+    // Calcular consumo medio ponderado (aceptar cualquier valor, incluso 50.0 temporal)
+const viaxesConConsumo = grupo.filter(v=>v.consumoMedio > 0 && v.distancia > 0);
+    let consMedia = 0;
+if(viaxesConConsumo.length > 0) {
+  const totalLxKm = viaxesConConsumo.reduce((s,v)=>s+(v.consumoMedio * v.distancia), 0);
+  const totalKm = viaxesConConsumo.reduce((s,v)=>s+v.distancia, 0);
+  consMedia = totalKm > 0 ? totalLxKm / totalKm : 0;
+}
+
     const scores=grupo.map(v=>calcScore(v));
     const scoreMedio=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null;
     const veces=grupo.length;
@@ -3470,17 +3561,16 @@ async function analizarRutas(){
     const fin=grupo[0].fin;
     const domId = `ruta-txt-${idx}`;
 
-   // Llamamos uno a uno con retraso en lugar de Promise.all (que irían a la vez)
-(async () => {
-  const nIni = await getStreetName(ini.lat, ini.lng);
-  const nFin = await getStreetName(fin.lat, fin.lng);
-  const el = document.getElementById(domId);
-  if(el) {
-    // Usamos textContent por seguridad (evita inyección de código malicioso)
-    el.textContent = `📍 ${nIni} → ${nFin}`;  }
-})();
+   (async () => {
+      const nIni = await getStreetName(ini.lat, ini.lng);
+      const nFin = await getStreetName(fin.lat, fin.lng);
+      const el = document.getElementById(domId);
+      if(el) {
+        el.textContent = `📍 ${nIni} → ${nFin}`;
+      }
+    })();
 
-    return`<div class="item" style="margin-bottom:7px">
+    return `<div class="item" style="margin-bottom:7px">
       <div class="item-hdr">
         <div>
           <div class="item-date">${veces} viaxe${veces>1?'s':''} · última ${ultimaData}</div>
@@ -3496,11 +3586,11 @@ async function analizarRutas(){
       </div>
       <div class="item-stats">
         <div class="is"><div class="lbl">Distancia</div><div class="val">${distMediaKm>0?distMediaKm.toFixed(1)+' km':'—'}</div></div>
-        <div class="is"><div class="lbl">Consumo</div><div class="val" style="color:${consMedia>ASTRA_REF.mixto?'var(--orange)':'var(--green)'}">${consMedia>0?consMedia.toFixed(1)+' L/100':'—'}</div></div>
+        <div class="is"><div class="lbl">Consumo</div><div class="val" style="color:${consMedia>ASTRA_REF.mixto?'var(--orange)':'var(--green)'}">${consMedia>0?consMedia.toFixed(1)+' L/100':'🏙️ Urbana'}</div></div>
         <div class="is"><div class="lbl">Score</div><div class="val" style="color:${scoreMedio?scoreColor(scoreMedio):'var(--text2)'}">${scoreMedio||'—'}</div></div>
       </div>
     </div>`;
-  }).join('');
+  }).filter(html => html !== '').join('');  // ← Elimina rutas vacías
 
   _rutasCache = html2;
   _rutasCacheCount = conGPS.length;
