@@ -316,8 +316,8 @@ h1.print-title{display:none}
 /* COCKPIT LANDSCAPE — iPhone 13 Pro Max portrait-rotated (428×926, útil 428×845) */
 @media (orientation:landscape) and (max-height:500px) {
 
-  /* SOLO ocultar nav cuando está en dashboard OBD */
-  #view-obd.active ~ .nav { display:none !important }
+/* Ocultar nav e header en landscape OBD */
+.nav { display:none !important }
   
   .hdr { display:none !important }
   .ab  { display:none !important }
@@ -352,7 +352,7 @@ h1.print-title{display:none}
     align-items:center !important;
     justify-content:center !important;
     gap:10px !important;
-    padding:5px 12px !important;
+    padding:5px max(12px, env(safe-area-inset-left)) 5px max(12px, env(safe-area-inset-right)) !important;
     background:var(--bg3) !important;
     border-bottom:1px solid var(--border) !important;
     position:relative !important;
@@ -448,7 +448,6 @@ h1.print-title{display:none}
     font-family:var(--font-m) !important;
     font-weight:500 !important;
     line-height:1 !important;
-    color:var(--text) !important;
     white-space:nowrap !important;
   }
 
@@ -746,20 +745,20 @@ h1.print-title{display:none}
 
   <!-- OBD DASHBOARD -->
 <div class="view" id="view-obd" style="padding:0;margin:-14px -16px;min-height:calc(100dvh - 68px - var(--sbot))">
-  <div id="obd-connect-screen" style="padding:20px 18px;padding-top:20px;flex:1;display:flex;flex-direction:column">
-    <div class="md-title">OBD2 en tempo real</div>
+  <div id="obd-connect-screen" style="padding:20px 18px;padding-top:20px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px">
+    <div class="md-title" style="text-align:center">OBD2 en tempo real</div>
     <div class="obd-status">
       <div class="obd-status-ico" id="obd-ico">🔌</div>
       <div class="obd-status-t" id="obd-t">Listo para conectar</div>
       <div class="obd-status-s" id="obd-s">Adaptador ELM327 BLE acendido e coche en contacto.</div>
     </div>
-
-    <button class="btn-p btn-green" id="obd-connect-btn" onclick="obdConectar()" style="margin-top:auto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-      Conectar OBD II ELM327
-    </button>
-
-    <p style="font-size:.65rem;color:var(--text3);font-family:var(--font-m);text-align:center;margin-top:8px">HM-10 · 0xFFE0/0xFFE1 · BLE 4.0</p>
+    <div>
+      <button class="btn-p btn-green" id="obd-connect-btn" onclick="obdConectar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Conectar OBD II ELM327
+      </button>
+      <p style="font-size:.65rem;color:var(--text3);font-family:var(--font-m);text-align:center;margin-top:8px">ELM327 · 0xFFE0/0xFFE1 · BLE 4.0</p>
+    </div>
   </div>
 
   <!-- DASHBOARD EN VIVO -->
@@ -899,10 +898,10 @@ h1.print-title{display:none}
         <div class="ls-lbl">Medio L/100</div>
         <div class="ls-val" id="dash-cons-med-ls">—</div>
       </div>
-      <div class="dash-card-ls">
-        <div class="ls-lbl">Total trayecto</div>
-        <div class="ls-val" id="dash-total-l-ls">— L</div>
-        <div class="ls-sub" id="dash-total-eur-ls">— €</div>
+      .<div class="dash-card-ls">
+        <div class="ls-lbl">Custo sesión</div>
+        <div class="ls-val" id="dash-total-eur-ls" style="color:var(--orange)">— €</div>
+        <div class="ls-sub" id="dash-total-l-ls">— L</div>
       </div>
     </div>
 
@@ -2000,9 +1999,12 @@ if(diasMes >= 7){
 
   // ── ANOMALÍA 6: consumo fóra de rango para o tipo de vehículo ──
   const veh = window._calcVehActivo;
-  if(veh && vsConConsumo.length >= 3){
-    const litTotA = vsConConsumo.slice(-5).reduce((s,v)=>s+(v.consumoMedio/100)*v.distancia,0);
-    const kmTotA  = vsConConsumo.slice(-5).reduce((s,v)=>s+v.distancia,0);
+  // Excluír viaxes de menos de 2 km (arranque en frío, aparcamento...)
+  const vsRango = vsConConsumo.filter(v => v.distancia >= 2);
+  if(veh && vsRango.length >= 3){
+    // Media ponderada por distancia: viaxes longas pesan máis
+    const litTotA = vsRango.slice(-5).reduce((s,v)=>s+(v.consumoMedio/100)*v.distancia,0);
+    const kmTotA  = vsRango.slice(-5).reduce((s,v)=>s+v.distancia,0);
     const consumoActual = kmTotA>0 ? (litTotA/kmTotA)*100 : 0;
 
     const RANGOS = {
@@ -4321,9 +4323,19 @@ async function checkBackupAutomatico(){
     const div = document.createElement('div');
     div.className = 'ab-item warn';
     div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px';
-    div.innerHTML = `<span>${msg}</span>
-      <button onclick="descartarAlerta('backup','${msg.replace(/'/g,"\\'")}','warn')"
-        style="background:none;border:none;color:inherit;opacity:0.6;cursor:pointer;font-size:1rem;flex-shrink:0;padding:0 2px;line-height:1">×</button>`;
+    div.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%">
+    <span style="flex:1">${msg}</span>
+    <button onclick="descartarAlerta('backup','${msg.replace(/'/g,"\\'")}','warn')"
+      style="background:none;border:none;color:inherit;opacity:0.6;cursor:pointer;font-size:1rem;flex-shrink:0;padding:0 2px;line-height:1">×</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:6px">
+    <button onclick="exportarBackup();descartarAlerta('backup','${msg.replace(/'/g,"\\'")}','warn')"
+      style="flex:1;padding:6px;background:rgba(240,148,74,.2);border:1px solid rgba(240,148,74,.4);border-radius:var(--rsm);color:var(--orange);font-family:var(--font-m);font-size:.7rem;cursor:pointer;font-weight:600">
+      💾 Facer backup agora
+    </button>
+  </div>`;
+div.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-direction:column';
     banner.appendChild(div);
   }
 }
@@ -4635,44 +4647,85 @@ obdChar.addEventListener('characteristicvaluechanged',obdOnData);
   obdDesconectar();
 }
 
-// Estado en tiempo real
-let obdBuffer='';
-let obdVelActual=0, obdRpmActual=0, obdTempActual=0, obdConsActual=0, obdMafActual=0, obdThrottleActual=0;
-let obdVelMax = 0; 
-let _obdGPSInterval = null; 
-let _tempAlertaActiva = false;
+// ══ ESTADO OBD ENCAPSULADO ══
+const OBDState = {
+  buffer:'',
+  velActual:0, rpmActual:0, tempActual:0, consActual:0, mafActual:0, throttleActual:0,
+  velMax:0,
+  fuelTrimSTFT:0, fuelTrimLTFT:0,
+  rpmMin:99999, rpmMax:0, rpmAcc:0, rpmCnt:0,
+  tempMin:999, tempMax:0, tempAcc:0, tempCnt:0,
+  consAcc:0, consCnt:0,
+  litrosTotais:0,
+  cutoffSecs:0, enCutoff:false,
+  velAcc:0, velCnt:0,
+  startTime:null, durInterval:null, horaInterval:null,
+  precioLitro:1.60,
+  tankLevel:50,
+  oilTempActual:null,
+  engineLoadActual:null,
+  qIdx:0, pendingPid:null,
+  gpsInterval:null,
+  tempAlertaActiva:false,
+};
+
+function resetOBDState(){
+  OBDState.buffer='';
+  OBDState.velActual=0; OBDState.rpmActual=0; OBDState.tempActual=0;
+  OBDState.consActual=0; OBDState.mafActual=0; OBDState.throttleActual=0;
+  OBDState.velMax=0;
+  OBDState.fuelTrimSTFT=0; OBDState.fuelTrimLTFT=0;
+  OBDState.rpmMin=99999; OBDState.rpmMax=0; OBDState.rpmAcc=0; OBDState.rpmCnt=0;
+  OBDState.tempMin=999; OBDState.tempMax=0; OBDState.tempAcc=0; OBDState.tempCnt=0;
+  OBDState.consAcc=0; OBDState.consCnt=0;
+  OBDState.litrosTotais=0;
+  OBDState.cutoffSecs=0; OBDState.enCutoff=false;
+  OBDState.velAcc=0; OBDState.velCnt=0;
+  OBDState.oilTempActual=null; OBDState.engineLoadActual=null;
+  OBDState.qIdx=0; OBDState.pendingPid=null;
+  OBDState.tempAlertaActiva=false;
+  window._cutoffDebounce={count:0,active:false};
+}
+
+// Aliases para compatibilidade co código existente (non renomear)
 const OBD_CORRECTION_FACTOR = 1.12;
-let obdFuelTrimSTFT = 0; // Short Term Fuel Trim
-let obdFuelTrimLTFT = 0; // Long Term Fuel Trim
-// Acumuladores RPM
-let obdRpmMin=99999, obdRpmMax=0, obdRpmAcc=0, obdRpmCnt=0;
-// Acumuladores Temp
-let obdTempMin=999, obdTempMax=0, obdTempAcc=0, obdTempCnt=0;
-// Acumuladores consumo
-let obdConsAcc=0, obdConsCnt=0;
-// Acumulador litros (integración segundo a segundo)
-let obdLitrosTotais=0;
-// Tiempo en corte de combustible (segundos)
-let obdCutoffSecs=0;
-let obdEnCutoff=false;
-// Velocidad para stats
-let obdVelAcc=0, obdVelCnt=0;
-
-// Timers
-let obdStartTime=null, obdDurInterval=null, obdHoraInterval=null;
-// Precio último repostaxe para coste en €
-let obdPrecioLitro=1.60; // default, se actualiza al conectar
-// Nivel combustible no tanque (litros)
-const OBD_TANK_CAPACITY=50; // litros tanque Astra H
-let obdTankLevel=50; // litros restantes, actualízase ao conectar
-// Temperatura aceite e carga motor
-let obdOilTempActual=null; // PID 5C, null = sen dato
-let obdEngineLoadActual=null; // PID 04, null = sen dato
-
-// Cola de comandos OBD (rotación)
-// 010D=vel, 010C=rpm, 0105=temp_refri, 0110=MAF
-let obdQIdx=0;
-let obdPendingPid=null;
+const OBD_TANK_CAPACITY = 50;
+let obdBuffer = OBDState.buffer;
+let obdVelActual = OBDState.velActual;
+let obdRpmActual = OBDState.rpmActual;
+let obdTempActual = OBDState.tempActual;
+let obdConsActual = OBDState.consActual;
+let obdMafActual = OBDState.mafActual;
+let obdThrottleActual = OBDState.throttleActual;
+let obdVelMax = OBDState.velMax;
+let obdFuelTrimSTFT = OBDState.fuelTrimSTFT;
+let obdFuelTrimLTFT = OBDState.fuelTrimLTFT;
+let obdRpmMin = OBDState.rpmMin;
+let obdRpmMax = OBDState.rpmMax;
+let obdRpmAcc = OBDState.rpmAcc;
+let obdRpmCnt = OBDState.rpmCnt;
+let obdTempMin = OBDState.tempMin;
+let obdTempMax = OBDState.tempMax;
+let obdTempAcc = OBDState.tempAcc;
+let obdTempCnt = OBDState.tempCnt;
+let obdConsAcc = OBDState.consAcc;
+let obdConsCnt = OBDState.consCnt;
+let obdLitrosTotais = OBDState.litrosTotais;
+let obdCutoffSecs = OBDState.cutoffSecs;
+let obdEnCutoff = OBDState.enCutoff;
+let obdVelAcc = OBDState.velAcc;
+let obdVelCnt = OBDState.velCnt;
+let obdStartTime = OBDState.startTime;
+let obdDurInterval = OBDState.durInterval;
+let obdHoraInterval = OBDState.horaInterval;
+let obdPrecioLitro = OBDState.precioLitro;
+let obdTankLevel = OBDState.tankLevel;
+let obdOilTempActual = OBDState.oilTempActual;
+let obdEngineLoadActual = OBDState.engineLoadActual;
+let obdQIdx = OBDState.qIdx;
+let obdPendingPid = OBDState.pendingPid;
+let _obdGPSInterval = OBDState.gpsInterval;
+let _tempAlertaActiva = OBDState.tempAlertaActiva;
 
 function abrirOBD(){
   goTo('obd',document.getElementById('nb-obd'));
@@ -4680,7 +4733,7 @@ function abrirOBD(){
 
 async function obdConectar(){
   // MODO SIMULADOR: Detectar si hay datos simulados
-  const simulatorData = localStorage.getItem('obd_simulator_data');
+  const simulatorData = safeStorage.get('obd_simulator_data');
   const isSimulatorMode = simulatorData !== null;
   
   if(!navigator.bluetooth && !isSimulatorMode){
@@ -4747,13 +4800,7 @@ const tankCapacity=vehiculoOBD?.deposito||50;
     await obdSend('ATSP0'); await sleep(500); // auto protocol
 
     // Reset acumuladores
-    obdVelActual=0;obdRpmActual=0;obdTempActual=0;obdConsActual=0;obdMafActual=0;obdVelMax=0;
-    obdRpmMin=99999;obdRpmMax=0;obdRpmAcc=0;obdRpmCnt=0;
-    obdTempMin=999;obdTempMax=0;obdTempAcc=0;obdTempCnt=0;
-    obdConsAcc=0;obdConsCnt=0;obdLitrosTotais=0;
-    obdCutoffSecs=0;obdEnCutoff=false;
-    obdVelAcc=0;obdVelCnt=0;
-    obdOilTempActual=null;obdEngineLoadActual=null;
+    resetOBDState();
     obdQIdx=0;obdBuffer='';_obdSlowCycleCount=0;_obdSlowPidIdx=0;
     obdStartTime=new Date();
     obdSesion={started:obdStartTime.toISOString(),gpsPoints:[],puntos:[]};
@@ -4802,7 +4849,7 @@ const tankCapacity=vehiculoOBD?.deposito||50;
          const _gps = obdSesion.gpsPoints;
          if(_gps.length > 1) for(let i=1; i<_gps.length; i++) _distSave += haversine(_gps[i-1], _gps[i]);
 
-         localStorage.setItem('roteiro_temp_viaxe', JSON.stringify({
+         safeStorage.set('roteiro_temp_viaxe', JSON.stringify({
             sesion: obdSesion,
             litros: obdLitrosTotais,
             velAcc: obdVelAcc,
@@ -4877,7 +4924,7 @@ const tankCapacity = window._vehiculoOBDActivo?.deposito || 50;
     
     // Leer datos del simulador cada segundo
     window.obdSimulatorInterval = setInterval(() => {
-      const simData = localStorage.getItem('obd_simulator_data');
+      const simData = safeStorage.get('obd_simulator_data');
       if(simData){
         const data = JSON.parse(simData);
         
@@ -5041,8 +5088,9 @@ async function obdAutoCalibrar(vehicleId, consumoOBD, distanciaOBD, fechaViaje) 
     console.error('Error en auto-calibración OBD:', err);
   }
 }
+
 function obdActualizarDashboard(){
-  const simData = localStorage.getItem('obd_simulator_data');
+  const simData = safeStorage.get('obd_simulator_data');
   if(!simData) return;
   
   const data = JSON.parse(simData);
@@ -5153,8 +5201,8 @@ const _factor = window._vehiculoOBDActivo?.obdCalibrationFactor ||
 
   // Banner header
   d('lv-eur',`${euros.toFixed(2)}€`);
-  d('dash-total-l-ls',`${obdLitrosTotais.toFixed(2)} L`);
   d('dash-total-eur-ls',`${euros.toFixed(2)} €`);
+  d('dash-total-l-ls',`${obdLitrosTotais.toFixed(2)} L`);
 
   // Guardar punto en sesión (cada 2s para no saturar)
   if(sec%2===0){
@@ -5197,6 +5245,7 @@ obdPendingPid = cmd.slice(2);
   obdSend(cmd).then(() => {
     // Salvavidas: si el ELM327 chino se cuelga y no responde en 1.5s, forzamos el siguiente
     obdTimeout = setTimeout(() => {
+      obdPendingPid = null;
       obdIsRequesting = false;
       obdRequestNext();
     }, 1500);
@@ -6015,10 +6064,18 @@ function procesarRespuestaDTC(raw){
   obdIsDiagMode = false; // Retomar telemetría
   const res = raw.replace(/\s/g, '').toUpperCase();
 
-  if(res.includes("4300") || res.includes("OK")){
-     document.getElementById('diag-res').innerHTML = "✅ NON SE ATOPARON FALLOS\nA ECU non reporta ningún código de erro activo.";
-     return;
-  }
+  // Sen fallos: 4300, OK, NODATA, ou só ceros
+const senFallos = res.includes("4300") || 
+                  res.includes("OK") || 
+                  res.includes("NODATA") ||
+                  res.includes("UNABLE") ||
+                  res.includes("SEARCHING") ||
+                  /^[0\s>]+$/.test(res); // só ceros e prompts
+
+if(senFallos){
+  document.getElementById('diag-res').innerHTML = "✅ NON SE ATOPARON FALLOS\nA ECU non reporta ningún código de erro activo.";
+  return;
+}
 
 const DTC_DESC = {
   // ── XENÉRICOS (todos os vehículos) ──
