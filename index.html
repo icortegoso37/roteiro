@@ -577,6 +577,15 @@ h1.print-title{display:none}
       <div class="clbl">Gasto mensual total (€)</div>
       <canvas id="cGasto" height="100"></canvas>
     </div>
+    <div class="cw" id="cScoreWrap" style="display:none">
+      <div class="clbl">Evolución score condución
+        <div class="cleg">
+          <div class="cleg-i"><div class="cleg-d" style="background:var(--accent)"></div>Últimos 7 días</div>
+          <div class="cleg-i"><div class="cleg-d" style="background:var(--orange)"></div>Últimos 30 días</div>
+        </div>
+      </div>
+      <canvas id="cScore" height="120"></canvas>
+    </div>
     <p class="sec-title" style="margin-top:16px">Consumo por <em>estación</em></p>
     <div class="estacion-grid" id="estacionGrid"></div>
     <p class="sec-title" style="margin-top:16px">Rutas <em>favoritas</em></p>
@@ -585,11 +594,21 @@ h1.print-title{display:none}
 
   <!-- VIAXES -->
   <div class="view" id="view-viaxes">
-    <p class="sec-title">Viaxes <em>rexistradas</em></p>
-    <button class="btn-s btn-obd" id="btnConectarOBD" onclick="goTo('obd',document.getElementById('nb-obd'))">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-      Sesión OBD en tempo real
-    </button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+  <p class="sec-title" style="margin:0">Viaxes <em>rexistradas</em></p>
+  <button id="btn-seleccionar-viaxes" onclick="toggleModoSeleccion()" 
+    style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:.68rem;font-family:var(--font-m);color:var(--text2);cursor:pointer">
+    ☑ Seleccionar
+  </button>
+</div>
+<!-- Barra de unión (oculta por defecto) -->
+<div id="barra-union" style="display:none;position:sticky;bottom:calc(68px + var(--sbot));left:0;right:0;z-index:50;background:var(--bg2);border:1px solid var(--accent);border-radius:var(--rsm);padding:10px 14px;margin-bottom:8px;display:none;align-items:center;justify-content:space-between;gap:8px">
+  <span id="union-contador" style="font-size:.75rem;font-family:var(--font-m);color:var(--accent)">0 viaxes seleccionadas</span>
+  <div style="display:flex;gap:6px">
+    <button onclick="cancelarSeleccion()" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:.7rem;font-family:var(--font-m);color:var(--text2);cursor:pointer">Cancelar</button>
+    <button id="btn-unir" onclick="unirViaxesSeleccionadas()" disabled style="background:var(--accent2);border:none;border-radius:6px;padding:6px 12px;font-size:.7rem;font-family:var(--font-m);color:white;cursor:pointer;font-weight:600;opacity:0.5">Unir</button>
+  </div>
+</div>
     <button class="btn-s" onclick="abrirModal('mo-import')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       Importar CSV de Car Scanner
@@ -704,7 +723,10 @@ h1.print-title{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Exportar Excel (.xlsx)
     </button>
     <button class="btn-s" onclick="exportarBackup()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Exportar backup JSON
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Exportar backup completo
+    </button>
+    <button class="btn-s" onclick="exportarBackupVehiculo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Exportar backup vehículo activo
     </button>
     <button class="btn-s" onclick="document.getElementById('fi-backup').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Importar backup JSON
@@ -881,10 +903,26 @@ h1.print-title{display:none}
       <div class="dash-card-ls">
         <div class="ls-lbl">RPM</div>
         <div class="ls-val" id="dash-rpm-ls">0</div>
+        <div style="height:2px;background:var(--border2);border-radius:2px;margin:4px 0 3px;overflow:hidden;width:100%">
+          <div id="dash-rpm-bar-ls" style="height:100%;border-radius:2px;background:var(--green);width:0%;transition:width .4s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.52rem;font-family:var(--font-m);color:var(--text3);width:100%">
+          <span>↓<span id="dash-rpm-min-ls">—</span></span>
+          <span>⌀<span id="dash-rpm-med-ls">—</span></span>
+          <span>↑<span id="dash-rpm-max-ls">—</span></span>
+        </div>
       </div>
       <div class="dash-card-ls">
         <div class="ls-lbl">Refrixerante</div>
         <div class="ls-val" id="dash-temp-ls">—°</div>
+        <div style="height:2px;background:var(--border2);border-radius:2px;margin:4px 0 3px;overflow:hidden;width:100%">
+          <div id="dash-temp-bar-ls" style="height:100%;border-radius:2px;width:0%;transition:width .6s ease,background .6s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.52rem;font-family:var(--font-m);color:var(--text3);width:100%">
+          <span>↓<span id="dash-temp-min-ls">—</span></span>
+          <span>⌀<span id="dash-temp-med-ls">—</span></span>
+          <span>↑<span id="dash-temp-max-ls">—</span></span>
+        </div>
       </div>
     </div>
 
@@ -898,7 +936,7 @@ h1.print-title{display:none}
         <div class="ls-lbl">Medio L/100</div>
         <div class="ls-val" id="dash-cons-med-ls">—</div>
       </div>
-      .<div class="dash-card-ls">
+      <div class="dash-card-ls">
         <div class="ls-lbl">Custo sesión</div>
         <div class="ls-val" id="dash-total-eur-ls" style="color:var(--orange)">— €</div>
         <div class="ls-sub" id="dash-total-l-ls">— L</div>
@@ -915,7 +953,12 @@ h1.print-title{display:none}
       <div class="dash-card-ls">
         <div class="ls-lbl">T. Aceite</div>
         <div class="ls-val" id="dash-oil-temp">—°</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:3px">
+          <div style="font-size:.52rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase">Aceler.</div>
+          <div style="font-size:.72rem;font-family:var(--font-m);font-weight:500" id="dash-throttle-ls">—%</div>
+        </div>
       </div>
+
       <div class="dash-card-ls ls-cutoff">
         <div class="ls-lbl">Corte comb.</div>
         <div class="ls-val" id="dash-cutoff-time-ls" style="color:var(--green)">0:00</div>
@@ -1499,18 +1542,47 @@ function _initPWA(){
 
 // ══ DB ══
 let db;
-const DB='roteiro_v3',VER=2;
+const DB='roteiro_v3',VER=3;
 function initDB(){
   return new Promise((res,rej)=>{
     const req=indexedDB.open(DB,VER);
     req.onupgradeneeded=e=>{
       const d=e.target.result;
+      const oldVer=e.oldVersion;
+      const tx=e.target.transaction;
+
+      // ── VER 1→2: creación inicial de stores ──
       if(!d.objectStoreNames.contains('vehicles')) d.createObjectStore('vehicles',{keyPath:'id',autoIncrement:true});
       if(!d.objectStoreNames.contains('viaxes')){const s=d.createObjectStore('viaxes',{keyPath:'id',autoIncrement:true});s.createIndex('vid','vehicleId');s.createIndex('started','started');}
       if(!d.objectStoreNames.contains('repos')){const s=d.createObjectStore('repos',{keyPath:'id',autoIncrement:true});s.createIndex('vid','vehicleId');}
       if(!d.objectStoreNames.contains('gastos')){const s=d.createObjectStore('gastos',{keyPath:'id',autoIncrement:true});s.createIndex('vid','vehicleId');}
       if(!d.objectStoreNames.contains('config')) d.createObjectStore('config',{keyPath:'id',autoIncrement:true});
       if(!d.objectStoreNames.contains('mantemento')){const s=d.createObjectStore('mantemento',{keyPath:'id',autoIncrement:true});s.createIndex('vid','vehicleId');}
+
+      // ── VER 2→3: engadir índices novos ──
+      if(oldVer < 3){
+        // Índice vehicleId en config (R-10)
+        const cfgStore = d.objectStoreNames.contains('config')
+          ? tx.objectStore('config')
+          : d.createObjectStore('config',{keyPath:'id',autoIncrement:true});
+        if(!cfgStore.indexNames.contains('vehicleId'))
+          cfgStore.createIndex('vehicleId','vehicleId');
+
+        // Índice data en repos para queries por data
+        const reposStore = tx.objectStore('repos');
+        if(!reposStore.indexNames.contains('data'))
+          reposStore.createIndex('data','data');
+
+        // Índice data en gastos para queries por data
+        const gastosStore = tx.objectStore('gastos');
+        if(!gastosStore.indexNames.contains('data'))
+          gastosStore.createIndex('data','data');
+
+        // Índice data en mantemento para queries por data
+        const mantStore = tx.objectStore('mantemento');
+        if(!mantStore.indexNames.contains('data'))
+          mantStore.createIndex('data','data');
+      }
     };
     req.onsuccess=e=>{db=e.target.result;res();};
     req.onerror=()=>rej(req.error);
@@ -1815,12 +1887,31 @@ document.getElementById('nv-rpmmaximas').value=v.rpmMaximas||'';
 }
 
 async function borrarVehicle(id){
-    try{
-  await dbDel('vehicles',id);
-  for(const s of['repos','viaxes','gastos']){const items=await dbAll(s,'vid',id);for(const i of items)await dbDel(s,i.id);}
-  if(cvid===id){const o=await dbAll('vehicles');setCVID(o.length?o[0].id:null);}
-  toast('Vehículo eliminado');await updateHeader();renderGaraxe();
-}catch(err){
+  // Confirmación antes de borrar
+  const veh = await dbGet('vehicles', id);
+  if(!confirm(`Borrar "${veh?.nome||'vehículo'}" e TODOS os seus datos?\nEsta acción non se pode desfacer.`)) return;
+
+  try{
+    // Borrar todos os datos primeiro, o vehículo ao final
+    for(const s of ['repos','viaxes','gastos','mantemento']){
+      const items = await dbAll(s,'vid',id);
+      for(const i of items) await dbDel(s,i.id);
+    }
+    // Borrar config do vehículo
+    const cfgs = await dbAll('config');
+    for(const c of cfgs.filter(c=>c.vehicleId===id)) await dbDel('config',c.id);
+
+    // Borrar o vehículo ao final (se todo o anterior foi ben)
+    await dbDel('vehicles',id);
+
+    if(cvid===id){
+      const outros = await dbAll('vehicles');
+      setCVID(outros.length ? outros[0].id : null);
+    }
+    toast('Vehículo eliminado ✓');
+    await updateHeader();
+    renderGaraxe();
+  }catch(err){
     console.error('Erro borrando vehículo:', err);
     toast('❌ Erro ao borrar vehículo: ' + err.message);
   }
@@ -3083,7 +3174,15 @@ const _vsConMedia = viaxes.filter(v=>v.consumoMedio>0&&v.distancia>0);
     const fonteBadge = v.fonte==='infocar'?'<span class="badge p">Infocar</span>':v.gpsPoints?.length>0?'<span class="badge b">GPS</span>':'';
     const sd = calcScoreDetalle(v); const sc = sd.total; const d = sd.det;
 
-    return `<div class="item">
+    return `<div class="item viaxe-item" data-id="${v.id}"
+      style="transition:border-color .2s,background .2s;cursor:${_modoSeleccion?'pointer':'default'}"
+      ${_modoSeleccion?`onclick="toggleSeleccionViaxe(${v.id})"`:''}>
+      ${_modoSeleccion?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${_viaxesSeleccionadas.has(v.id)?'var(--accent)':'var(--border2)'};background:${_viaxesSeleccionadas.has(v.id)?'var(--accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${_viaxesSeleccionadas.has(v.id)?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>':''}
+        </div>
+        <span style="font-size:.65rem;color:var(--text3);font-family:var(--font-m)">${_viaxesSeleccionadas.has(v.id)?'Seleccionada':'Toca para seleccionar'}</span>
+      </div>`:''}
       <div class="item-hdr">
         <div><div class="item-date">${fmtDate(v.started)}${v.gpsPoints?.length?' 📍':''}</div>
         <div style="margin-top:3px;display:flex;gap:5px;flex-wrap:wrap">${badge}${fonteBadge}</div></div>
@@ -3122,6 +3221,145 @@ const _vsConMedia = viaxes.filter(v=>v.consumoMedio>0&&v.distancia>0);
         <button onclick="location.reload()" class="btn" style="margin-top:15px">🔄 Recargar</button>
       </div>
     `;
+  }
+}
+// ══ UNIÓN DE VIAXES ══
+let _viaxesSeleccionadas = new Set();
+let _modoSeleccion = false;
+
+function toggleModoSeleccion(){
+  _modoSeleccion = !_modoSeleccion;
+  _viaxesSeleccionadas.clear();
+  const btn = document.getElementById('btn-seleccionar-viaxes');
+  const barra = document.getElementById('barra-union');
+  if(_modoSeleccion){
+    btn.textContent = '✕ Cancelar';
+    btn.style.color = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    barra.style.display = 'flex';
+  } else {
+    btn.textContent = '☑ Seleccionar';
+    btn.style.color = 'var(--text2)';
+    btn.style.borderColor = 'var(--border)';
+    barra.style.display = 'none';
+  }
+  renderViaxes();
+}
+
+function cancelarSeleccion(){
+  _modoSeleccion = false;
+  _viaxesSeleccionadas.clear();
+  const btn = document.getElementById('btn-seleccionar-viaxes');
+  btn.textContent = '☑ Seleccionar';
+  btn.style.color = 'var(--text2)';
+  btn.style.borderColor = 'var(--border)';
+  document.getElementById('barra-union').style.display = 'none';
+  renderViaxes();
+}
+
+function toggleSeleccionViaxe(id){
+  if(_viaxesSeleccionadas.has(id)) _viaxesSeleccionadas.delete(id);
+  else _viaxesSeleccionadas.add(id);
+  const n = _viaxesSeleccionadas.size;
+  document.getElementById('union-contador').textContent = `${n} viaxe${n!==1?'s':''} seleccionada${n!==1?'s':''}`;
+  const btnUnir = document.getElementById('btn-unir');
+  btnUnir.disabled = n < 2;
+  btnUnir.style.opacity = n < 2 ? '0.5' : '1';
+  // Actualizar estilo do item seleccionado
+  document.querySelectorAll('.viaxe-item').forEach(el=>{
+    const elId = parseInt(el.dataset.id);
+    el.style.borderColor = _viaxesSeleccionadas.has(elId) ? 'var(--accent)' : 'var(--border)';
+    el.style.background = _viaxesSeleccionadas.has(elId) ? 'var(--aglow2)' : '';
+  });
+}
+
+async function unirViaxesSeleccionadas(){
+  if(_viaxesSeleccionadas.size < 2){toast('Selecciona polo menos 2 viaxes');return;}
+  if(!confirm(`Unir ${_viaxesSeleccionadas.size} viaxes nunha soa?\nAs viaxes orixinais serán borradas.`)) return;
+
+  try{
+    // Cargar todas as viaxes seleccionadas
+    const ids = [..._viaxesSeleccionadas];
+    const viaxes = await Promise.all(ids.map(id=>dbGet('viaxes',id)));
+    const vs = viaxes.filter(Boolean).sort((a,b)=>new Date(a.started)-new Date(b.started));
+
+    if(vs.length < 2){toast('Erro ao cargar as viaxes');return;}
+
+    // Calcular datos unidos
+    const distancia = vs.reduce((s,v)=>s+(v.distancia||0),0);
+    const litros = vs.reduce((s,v)=>s+(v.combustible||0),0);
+    const consumoMedio = distancia > 0 ? (litros/distancia)*100 : 0;
+
+    // Tempo total: sumar segundos
+    const totalSec = vs.reduce((s,v)=>{
+      const t = v.tempoConduccion||v.tempoTotal||'0:00:00';
+      const parts = t.split(':').map(Number);
+      return s + (parts[0]*3600)+(parts[1]*60)+(parts[2]||0);
+    },0);
+    const h=Math.floor(totalSec/3600);
+    const m=Math.floor((totalSec%3600)/60);
+    const sec=totalSec%60;
+    const tempoTotal=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+
+    // Velocidade media ponderada por distancia
+    const velMedia = distancia > 0
+      ? vs.reduce((s,v)=>s+(v.velMedia||0)*(v.distancia||0),0)/distancia
+      : 0;
+
+    // Temperatura media ponderada
+    const tempMedia = vs.filter(v=>v.tempMedia>0).length
+      ? vs.filter(v=>v.tempMedia>0).reduce((s,v)=>s+v.tempMedia,0)/vs.filter(v=>v.tempMedia>0).length
+      : 0;
+
+    // GPS: concatenar todos os puntos en orde
+    const gpsPoints = vs.flatMap(v=>v.gpsPoints||[]);
+    const puntos = vs.flatMap(v=>v.puntos||[]);
+
+    // obdExtra: sumar acumulados
+    const obdExtra = {
+      litrosTotais: litros,
+      costoEuros: vs.reduce((s,v)=>s+(v.obdExtra?.costoEuros||0),0),
+      cutoffSecs: vs.reduce((s,v)=>s+(v.obdExtra?.cutoffSecs||0),0),
+      rpmMedia: vs.filter(v=>v.obdExtra?.rpmMedia>0).length
+        ? vs.filter(v=>v.obdExtra?.rpmMedia>0).reduce((s,v)=>s+(v.obdExtra?.rpmMedia||0),0)/vs.filter(v=>v.obdExtra?.rpmMedia>0).length
+        : 0,
+    };
+
+    // Viaxe unida
+    const viaxeUnida = {
+      vehicleId: vs[0].vehicleId,
+      fonte: vs[0].fonte,
+      started: vs[0].started,
+      finished: vs[vs.length-1].finished,
+      distancia,
+      combustible: litros,
+      consumoMedio,
+      tempoTotal,
+      tempoConduccion: tempoTotal,
+      velMedia,
+      velMaxima: Math.max(...vs.map(v=>v.velMaxima||0)),
+      tempMedia,
+      gpsPoints,
+      puntos,
+      obdExtra,
+      infocar: vs.find(v=>v.infocar)?.infocar||null,
+      unida: true,
+      viaxesOrixe: ids
+    };
+
+    // Gardar viaxe unida
+    await dbAdd('viaxes', viaxeUnida);
+
+    // Borrar viaxes orixinais
+    for(const id of ids) await dbDel('viaxes', id);
+
+    cancelarSeleccion();
+    toast(`✓ ${vs.length} viaxes unidas correctamente`);
+    renderViaxes();
+
+  }catch(err){
+    console.error('Erro unindo viaxes:', err);
+    toast('❌ Erro ao unir viaxes: '+err.message);
   }
 }
 
@@ -3771,6 +4009,7 @@ await renderResumoSemanal(repos, viaxes, gastos, _vehResumoDatos);
       `Quedan ~${p.kmRestantes.toLocaleString()} km para repostar · Odómetro estimado: ${(p.ultKm+p.kmRestantes).toLocaleString()} km`;
   });
   renderChartKm(repos);
+renderChartScore(viaxes);
   const _vehActivo=await dbGet('vehicles',cvid);
   window._calcVehRef=_vehActivo?.consumoRef||null;
 window._calcVehActivo=_vehActivo||null;
@@ -3919,6 +4158,76 @@ function renderChartKm(repos){
   for(let i=1;i<sort.length;i++){const m=sort[i].data.slice(0,7);const d=sort[i].km-sort[i-1].km;if(d>0)km[m]=(km[m]||0)+d;}
   const meses=Object.keys(km).sort().slice(-12);
   makeBar('cKm',meses.map(m=>mesLabel(m)),meses.map(m=>km[m]),'var(--green)',100);
+}
+function renderChartScore(viaxes){
+  const wrap = document.getElementById('cScoreWrap');
+  if(!viaxes.length){destroyChart('cScore');if(wrap)wrap.style.display='none';return;}
+
+  const agora = new Date();
+  const fai30 = new Date(agora); fai30.setDate(agora.getDate()-30);
+  const fai7  = new Date(agora); fai7.setDate(agora.getDate()-7);
+
+  // Viaxes con score nos últimos 30 días
+  const vs30 = viaxes
+    .filter(v=>v.consumoMedio>0&&v.distancia>=2&&new Date(v.started)>=fai30)
+    .sort((a,b)=>new Date(a.started)-new Date(b.started));
+
+  if(vs30.length < 2){if(wrap)wrap.style.display='none';return;}
+  if(wrap)wrap.style.display='block';
+
+  const labels = vs30.map(v=>fmtDate(v.started).slice(0,6));
+  const scores30 = vs30.map(v=>calcScore(v,window._calcVehActivo));
+  const scores7  = vs30.map(v=>{
+    const d=new Date(v.started);
+    return d>=fai7 ? calcScore(v,window._calcVehActivo) : null;
+  });
+
+  if(charts['cScore'])charts['cScore'].destroy();
+  charts['cScore']=new Chart(document.getElementById('cScore').getContext('2d'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'30 días',
+          data:scores30,
+          borderColor:'var(--orange)',
+          backgroundColor:'rgba(240,148,74,.1)',
+          borderWidth:1.5,
+          pointRadius:2,
+          fill:false,
+          tension:.3,
+          spanGaps:false
+        },
+        {
+          label:'7 días',
+          data:scores7,
+          borderColor:'var(--accent)',
+          backgroundColor:'rgba(91,138,240,.15)',
+          borderWidth:2,
+          pointRadius:3,
+          fill:true,
+          tension:.3,
+          spanGaps:false
+        }
+      ]
+    },
+    options:{
+      ...chartOpts(120),
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:ctx=>`Score: ${ctx.parsed.y??'—'}/100`
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#4a4f6a',font:{size:8},maxTicksLimit:8},grid:{color:'#1a1d28'},border:{display:false}},
+        y:{min:0,max:100,ticks:{color:'#4a4f6a',font:{size:8},maxTicksLimit:5},grid:{color:'#1a1d28'},border:{display:false}}
+      }
+    }
+  });
 }
 
 function renderChartConsumo(repos,viaxes,consumos,refConsumo){
@@ -4363,6 +4672,43 @@ async function exportarBackup(){
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=fname;a.click();URL.revokeObjectURL(url);
       toast('Backup exportado ✓');
+  }
+}
+// ══ BACKUP POR VEHÍCULO ══
+async function exportarBackupVehiculo(){
+  if(!cvid){toast('Selecciona un vehículo primeiro');return;}
+  const[veh,repos,viaxes,gastos,mantemento,config]=await Promise.all([
+    dbGet('vehicles',cvid),
+    dbAll('repos','vid',cvid),
+    dbAll('viaxes','vid',cvid),
+    dbAll('gastos','vid',cvid),
+    dbAll('mantemento','vid',cvid),
+    dbAll('config')
+  ]);
+  const cfgVeh=config.filter(c=>c.vehicleId===cvid);
+  const bk={
+    version:4,
+    date:new Date().toISOString(),
+    tipo:'vehiculo',
+    vehicles:[veh],
+    repos,
+    viaxes:viaxes.map(v=>({...v})),
+    gastos,
+    mantemento,
+    config:cfgVeh
+  };
+
+  const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});
+  const fname=`roteiro_${veh?.nome||'vehiculo'}_${new Date().toISOString().slice(0,10)}.json`;
+
+  const file=new File([blob],fname,{type:blob.type});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    await navigator.share({files:[file]});
+    toast('Backup de '+( veh?.nome||'vehículo')+' preparado ✓');
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=fname;a.click();URL.revokeObjectURL(url);
+    toast('Backup de '+(veh?.nome||'vehículo')+' exportado ✓');
   }
 }
 
@@ -4824,7 +5170,7 @@ const tankCapacity=vehiculoOBD?.deposito||50;
       obdSesion.gpsPoints.push({lat:pos.coords.latitude,lng:pos.coords.longitude});
   }
 },()=>{},{enableHighAccuracy:true,timeout:3000});
-      },3000);
+      },2000);
     }
 
     // Loop lectura OBD // Iniciar ciclo de lectura asíncrono (evita bloqueos)
@@ -5318,13 +5664,17 @@ function parseOBDLine(line){
     d('dash-rpm-min',obdRpmMin<99999?obdRpmMin:'—');
     d('dash-rpm-max',obdRpmMax||'—');
     d('dash-rpm-med',rpmMed||'—');
+    d('dash-rpm-min-ls',obdRpmMin<99999?obdRpmMin:'—');
+    d('dash-rpm-max-ls',obdRpmMax||'—');
+    d('dash-rpm-med-ls',rpmMed||'—');
     // Barra RPM: 0–6500
     const rpmPct=Math.min(obdRpmActual/6500*100,100);
+    const rpmColor=rpmPct>85?'var(--red)':rpmPct>70?'var(--orange)':'var(--green)';
     const rpmBar=document.getElementById('dash-rpm-bar');
-    if(rpmBar){
-      rpmBar.style.width=rpmPct+'%';
-      rpmBar.style.background=rpmPct>85?'var(--red)':rpmPct>70?'var(--orange)':'var(--green)';
-    }
+    const rpmBarLs=document.getElementById('dash-rpm-bar-ls');
+    if(rpmBar){rpmBar.style.width=rpmPct+'%';rpmBar.style.background=rpmColor;}
+    if(rpmBarLs){rpmBarLs.style.width=rpmPct+'%';rpmBarLs.style.background=rpmColor;}
+
     // Card RPM color si zona roja
     const rpmCard=document.getElementById('dash-rpm-card');
     if(rpmCard)rpmCard.style.borderColor=obdRpmActual>5500?'rgba(232,85,85,.5)':obdRpmActual>4000?'rgba(240,148,74,.3)':'var(--border)';
@@ -5357,16 +5707,22 @@ function parseOBDLine(line){
     d('dash-temp-min',obdTempMin<999?obdTempMin+'°':'—');
     d('dash-temp-max',obdTempMax?obdTempMax+'°':'—');
     d('dash-temp-med',tMed?tMed+'°':'—');
-    // Barra temp: fría=azul, normal=verde, caliente=naranja, crítica=rojo
-    // Normal Z16XEP: 88-95°C
+    d('dash-temp-min-ls',obdTempMin<999?obdTempMin+'°':'—');
+    d('dash-temp-max-ls',obdTempMax?obdTempMax+'°':'—');
+    d('dash-temp-med-ls',tMed?tMed+'°':'—');
+    
+  // Barra temp fría=azul, normal=verde, caliente=naranja, crítica=rojo
+
     const tPct=Math.min(Math.max((obdTempActual/130)*100,0),100);
     const tBar=document.getElementById('dash-temp-bar');
+    const tBarLs=document.getElementById('dash-temp-bar-ls');
     const tCard=document.getElementById('dash-temp-card');
-    let tColor='var(--accent)'; // azul = fría
-    if(obdTempActual>=80&&obdTempActual<=100){tColor='var(--green)';}       // normal
-    else if(obdTempActual>100&&obdTempActual<=108){tColor='var(--orange)';} // alta
-    else if(obdTempActual>108){tColor='var(--red)';}                         // crítica
+    let tColor='var(--accent)'; // azul por debajo de 80°C
+    if(obdTempActual>=80&&obdTempActual<=100){tColor='var(--green)';} // verde entre 80 y 100°C
+    else if(obdTempActual>100&&obdTempActual<=108){tColor='var(--orange)';} // naranja entre 100 y 108°C
+    else if(obdTempActual>108){tColor='var(--red)';} // rojo por encima de 108°C
     if(tBar){tBar.style.width=tPct+'%';tBar.style.background=tColor;}
+    if(tBarLs){tBarLs.style.width=tPct+'%';tBarLs.style.background=tColor;}
     // Color texto temp
     const tEl=document.getElementById('dash-temp');
     if(tEl)tEl.style.color=tColor;
@@ -5384,6 +5740,11 @@ function parseOBDLine(line){
 } else if(pid==='11'){
     // Posición del acelerador (0 a 100%)
     obdThrottleActual = (a * 100) / 255;
+    const thrEl = document.getElementById('dash-throttle-ls');
+    if(thrEl){
+      thrEl.textContent = obdThrottleActual.toFixed(1)+'%';
+      thrEl.style.color = obdThrottleActual < 22 ? 'var(--green)' : obdThrottleActual > 75 ? 'var(--red)' : obdThrottleActual > 50 ? 'var(--orange)' : 'var(--text)';
+    }
   } else if(pid==='10'){
     // MAF = (A*256+B) / 100  en g/s
     obdMafActual=(a*256+b)/100;
@@ -5529,7 +5890,13 @@ async function obdDesconectar(){
 
   document.getElementById('obdLiveBanner').classList.remove('show');
   document.getElementById('obd-dashboard').style.display='none';
+  document.getElementById('obd-dashboard').style.removeProperty('display');
   document.getElementById('obd-connect-screen').style.display='flex';
+  // Ocultar topbar landscape ao desconectar
+  const _tlsOff = document.getElementById('obd-topbar-landscape');
+  if(_tlsOff) _tlsOff.style.display='none';
+  // Ocultar filas landscape
+  document.querySelectorAll('.obd-row-top,.obd-row-mid,.obd-row-bot').forEach(r=>r.style.display='none');
   // Ocultar dot pestaña OBD
   const _dot2=document.getElementById('obdNavDot');if(_dot2)_dot2.style.display='none';
 // Gardar viaxe se hai mínimos datos (más permisivo para no perder viajes)
@@ -6048,8 +6415,15 @@ function abrirDiagnosis(){
 
 async function obdLerDTC(){
   document.getElementById('diag-res').innerHTML = "⏳ Consultando fallos (Modo 03)...";
-  obdIsDiagMode = true; // Pausar telemetría
-  obdSend("03"); // Comando estándar OBD para ler códigos
+  // Limpar buffer e esperar a que se baleiре antes de cambiar a modo diagnóstico
+  obdBuffer = '';
+  obdIsRequesting = false;
+  clearTimeout(obdTimeout);
+  obdIsDiagMode = true;
+  // Esperar 300ms para que cheguen e descarten respostas de telemetría pendentes
+  await sleep(300);
+  obdBuffer = '';
+  obdSend("03");
 }
 
 async function obdBorrarDTC(){
