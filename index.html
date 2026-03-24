@@ -5800,7 +5800,7 @@ obdConsActual=Math.min(
     // DETECCIÓN CUTOFF MEJORADA CON ANTI-REBOTE
 // ✅ FIX #5: Cutoff detection mejorado según Z16XEP real
 const cutoffDetectado = 
-  obdRpmActual > 1100 &&      // Motor en marcha (por encima del ralentí)
+  obdRpmActual > 1000 &&      // Motor en marcha (por encima del ralentí)
   obdThrottleActual < 8 &&    // Acelerador en reposo (con margen)
   obdMafActual < 6 &&       // MAF muy bajo (motor casi sin carga)
   obdVelActual > 5;            // Vehículo en movimiento (descartamos parado en semáforo o atasco)
@@ -5810,7 +5810,7 @@ if(!window._cutoffDebounce) window._cutoffDebounce = { count: 0, active: false }
 
 if(cutoffDetectado) {
   _cutoffDebounce.count++;
-  if(_cutoffDebounce.count >= 4 && !_cutoffDebounce.active) {
+  if(_cutoffDebounce.count >= 2 && !_cutoffDebounce.active) {
     _cutoffDebounce.active = true;
     obdEnCutoff = true;
   }
