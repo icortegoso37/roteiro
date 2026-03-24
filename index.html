@@ -5793,7 +5793,7 @@ obdConsActual=Math.min(
 // ✅ FIX #5: Cutoff detection mejorado según Z16XEP real
 const cutoffDetectado = 
   obdRpmActual > 1100 &&      // Sobre ralentí
-  obdThrottleActual < 19.9 &&    // Acelerador suelto (19% es reposo, 12% con margen)
+  obdThrottleActual < 8 &&    // Acelerador suelto (19% es reposo, 12% con margen)
   obdMafActual < 2.5 &&        // Inyección mínima
   obdVelActual > 5;            // En movimiento real
 
