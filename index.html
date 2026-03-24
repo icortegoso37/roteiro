@@ -5794,7 +5794,7 @@ obdConsActual=Math.min(
 const cutoffDetectado = 
   obdRpmActual > 1100 &&      // Sobre ralentí
   obdThrottleActual < 8 &&    // Acelerador suelto (19% es reposo, 12% con margen)
-  obdMafActual < 2.5 &&        // Inyección mínima
+  // obdMafActual < 2.5 &&        // Inyección mínima
   obdVelActual > 5;            // En movimiento real
 
 // Anti-rebote: activar cutoff só se se mantén 4 ciclos consecutivos (~2s)
