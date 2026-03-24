@@ -951,11 +951,14 @@ h1.print-title{display:none}
         <div class="ls-sub" id="dash-tank-l">— L</div>
       </div>
       <div class="dash-card-ls">
-        <div class="ls-lbl">T. Aceite</div>
-        <div class="ls-val" id="dash-oil-temp">—°</div>
+        <div class="ls-lbl">MAF / Acel.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:2px">
+          <div style="font-size:.52rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase">MAF</div>
+          <div style="font-size:.85rem;font-family:var(--font-m);font-weight:600" id="dash-maf-ls">— g/s</div>
+        </div>
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:3px">
-          <div style="font-size:.52rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase">Aceler.</div>
-          <div style="font-size:.72rem;font-family:var(--font-m);font-weight:500" id="dash-throttle-ls">—%</div>
+          <div style="font-size:.52rem;color:var(--text3);font-family:var(--font-m);text-transform:uppercase">Acel.</div>
+          <div style="font-size:.85rem;font-family:var(--font-m);font-weight:600" id="dash-throttle-ls">—%</div>
         </div>
       </div>
 
@@ -5748,6 +5751,11 @@ function parseOBDLine(line){
   } else if(pid==='10'){
     // MAF = (A*256+B) / 100  en g/s
     obdMafActual=(a*256+b)/100;
+    const mafLsEl = document.getElementById('dash-maf-ls');
+    if(mafLsEl){
+      mafLsEl.textContent = obdMafActual.toFixed(1)+' g/s';
+      mafLsEl.style.color = obdMafActual < 2.5 ? 'var(--green)' : obdMafActual > 15 ? 'var(--red)' : obdMafActual > 8 ? 'var(--orange)' : 'var(--text)';
+    }
 
     // Consumo instantáneo L/100 desde MAF
     if(obdVelActual>3 && obdMafActual>0){
@@ -5792,10 +5800,10 @@ obdConsActual=Math.min(
     // DETECCIÓN CUTOFF MEJORADA CON ANTI-REBOTE
 // ✅ FIX #5: Cutoff detection mejorado según Z16XEP real
 const cutoffDetectado = 
-  obdRpmActual > 1100 &&      // Sobre ralentí
-  obdThrottleActual < 8 &&    // Acelerador suelto (19% es reposo, 12% con margen)
-  // obdMafActual < 2.5 &&        // Inyección mínima
-  obdVelActual > 5;            // En movimiento real
+  obdRpmActual > 1100 &&      // Motor en marcha (por encima del ralentí)
+  obdThrottleActual < 8 &&    // Acelerador en reposo (con margen)
+  obdMafActual < 4 &&       // MAF muy bajo (motor casi sin carga)
+  obdVelActual > 5;            // Vehículo en movimiento (descartamos parado en semáforo o atasco)
 
 // Anti-rebote: activar cutoff só se se mantén 4 ciclos consecutivos (~2s)
 if(!window._cutoffDebounce) window._cutoffDebounce = { count: 0, active: false };
