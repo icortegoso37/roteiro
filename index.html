@@ -1895,6 +1895,7 @@ async function editarVehicle(id){
 document.getElementById('nv-tipo').value=v.tipoVehiculo||'turismo';
 document.getElementById('nv-rpmoptimas').value=v.rpmOptimas||'';
 document.getElementById('nv-rpmmaximas').value=v.rpmMaximas||'';
+document.getElementById('nv-cutoff-perfil').value=v.cutoffPerfil||'manual';
   document.getElementById('nv-title').textContent='Editar vehículo';
   abrirModal('mo-newv');
 }
