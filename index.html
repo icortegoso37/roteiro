@@ -1206,6 +1206,15 @@ h1.print-title{display:none}
   </select>
   <div class="fhint">Úsase para calcular o score de condución correctamente</div>
 </div>
+<div class="fg">
+  <label class="fl">Perfil caixa de cambios</label>
+  <select class="fi" id="nv-cutoff-perfil">
+    <option value="manual">Manual / Automático convencional</option>
+    <option value="cvt">CVT (Nissan Xtronic, Honda, Toyota...)</option>
+  </select>
+  <div class="fhint">Afecta á detección do corte de combustible por OBD</div>
+</div>
+
 <div class="frow">
   <div class="fg">
     <label class="fl">RPM óptimas</label>
@@ -1858,7 +1867,8 @@ const data={
     obdFactor:parseFloat(document.getElementById('nv-obdfactor').value)||1.12,
 tipoVehiculo:document.getElementById('nv-tipo').value||'turismo',
 rpmOptimas:parseInt(document.getElementById('nv-rpmoptimas').value)||2000,
-rpmMaximas:parseInt(document.getElementById('nv-rpmmaximas').value)||3500
+rpmMaximas:parseInt(document.getElementById('nv-rpmmaximas').value)||3500,
+cutoffPerfil:document.getElementById('nv-cutoff-perfil').value||'manual'
   };
   if(id) await dbPut('vehicles',{...data,id:parseInt(id)});
   else{const nid=await dbAdd('vehicles',data);if(!cvid){setCVID(nid);}}
@@ -5799,11 +5809,16 @@ obdConsActual=Math.min(
     // Además, exigimos ir a más de 5km/h y por encima del ralentí (>1100 RPM).
     // DETECCIÓN CUTOFF MEJORADA CON ANTI-REBOTE
 // ✅ FIX #5: Cutoff detection mejorado según Z16XEP real
-const cutoffDetectado = 
-  obdRpmActual > 1000 &&      // Motor en marcha (por encima del ralentí)
-  obdThrottleActual < 8 &&    // Acelerador en reposo (con margen)
-  obdMafActual < 6 &&       // MAF muy bajo (motor casi sin carga)
-  obdVelActual > 5;            // Vehículo en movimiento (descartamos parado en semáforo o atasco)
+    const _esCVT = window._vehiculoOBDActivo?.cutoffPerfil === 'cvt';
+    const cutoffDetectado = _esCVT
+      ? (obdRpmActual > 900 &&
+         obdEngineLoadActual !== null && obdEngineLoadActual < 12 &&
+         obdMafActual < 13 &&
+         obdVelActual > 5)
+      : (obdRpmActual > 1000 &&
+         obdThrottleActual < 8 &&
+         obdMafActual < 6 &&
+         obdVelActual > 5);
 
 // Anti-rebote: activar cutoff só se se mantén 4 ciclos consecutivos (~2s)
 if(!window._cutoffDebounce) window._cutoffDebounce = { count: 0, active: false };
@@ -5955,6 +5970,14 @@ if(distancia > 1 && consMed > 0) {
   }
 
   setObdStatus('🔌','Desconectado','Podes iniciar unha nova sesión.');
+  obdLitrosTotais=0;obdCutoffSecs=0;obdEnCutoff=false;
+  obdVelAcc=0;obdVelCnt=0;obdRpmAcc=0;obdRpmCnt=0;
+  obdRpmMin=99999;obdRpmMax=0;obdTempAcc=0;obdTempCnt=0;
+  obdTempMin=999;obdTempMax=0;obdVelMax=0;obdConsAcc=0;obdConsCnt=0;
+  obdConsActual=0;obdMafActual=0;obdVelActual=0;obdRpmActual=0;
+  obdThrottleActual=0;obdEngineLoadActual=null;obdOilTempActual=null;
+  obdFuelTrimSTFT=0;obdFuelTrimLTFT=0;
+  window._cutoffDebounce={count:0,active:false};
   obdSesion=null;obdStartTime=null;
   // Actualizar predición tras rematar viaxe
   calcularPrediccionRepostaxe(cvid).then(p=>{
