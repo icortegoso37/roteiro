@@ -833,6 +833,20 @@ h1.print-title{display:none}
       <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:var(--green)">⚡ CORTE COMBUSTIBLE</div>
       <div style="font-size:.68rem;color:var(--green);font-family:var(--font-m);margin-top:2px">Motor freando sen gastar · Levanta o pé</div>
     </div>
+    <!-- DEBUG CUTOFF: mostra valores en tempo real para calibrar (só visible con perfil tdi-manual) -->
+    <div id="dash-cutoff-debug" style="display:none;margin:0 14px 6px;padding:7px 12px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:var(--rsm);font-family:var(--font-m);font-size:.62rem;color:var(--purple)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-weight:600;text-transform:uppercase;letter-spacing:.06em">🔬 Debug Cutoff</span>
+        <span id="dbg-cutoff-estado" style="padding:1px 6px;border-radius:10px;font-size:.58rem;font-weight:600">—</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:4px;text-align:center">
+        <div><div style="color:var(--text3);font-size:.5rem">RPM</div><div id="dbg-rpm">—</div></div>
+        <div><div style="color:var(--text3);font-size:.5rem">MAF</div><div id="dbg-maf">—</div></div>
+        <div><div style="color:var(--text3);font-size:.5rem">ACEL%</div><div id="dbg-thr">—</div></div>
+        <div><div style="color:var(--text3);font-size:.5rem">CARGA%</div><div id="dbg-load">—</div></div>
+        <div><div style="color:var(--text3);font-size:.5rem">VEL</div><div id="dbg-vel">—</div></div>
+      </div>
+    </div>
     <style>@keyframes cutoffPulse{0%,100%{border-color:rgba(62,207,130,.5)}50%{border-color:rgba(62,207,130,1)}}</style>
 
     <!-- RPM + TEMP (portrait) -->
@@ -1209,7 +1223,9 @@ h1.print-title{display:none}
 <div class="fg">
   <label class="fl">Perfil caixa de cambios</label>
   <select class="fi" id="nv-cutoff-perfil">
-    <option value="manual">Manual / Automático convencional</option>
+    <option value="manual">Manual / Automático convencional (gasolina)</option>
+    <option value="tdi-manual">TDI Manual (diésel con acelerador electrónico)</option>
+    <option value="truck-powershift">Camión PowerShift (Actros, diésel pesado)</option>
     <option value="cvt">CVT (Nissan Xtronic, Honda, Toyota...)</option>
   </select>
   <div class="fhint">Afecta á detección do corte de combustible por OBD</div>
@@ -5805,23 +5821,64 @@ obdConsActual=Math.min(
     }
     const consMed = (distEst > 0.05) ? (obdLitrosTotais / distEst) * 100 : 0;
 
-    // DETECCIÓN CUTOFF AFINADA PARA ASTRA H (Z16XEP)
-    // El acelerador en reposo está ~18%. Usamos < 22% como margen seguro.
-    // Además, exigimos ir a más de 5km/h y por encima del ralentí (>1100 RPM).
-    // DETECCIÓN CUTOFF MEJORADA CON ANTI-REBOTE
-// ✅ FIX #5: Cutoff detection mejorado según Z16XEP real
-    const _esCVT = window._vehiculoOBDActivo?.cutoffPerfil === 'cvt';
-    const cutoffDetectado = _esCVT
-      ? (obdRpmActual > 900 &&
+    // DETECCIÓN CUTOFF MULTI-PERFIL
+    // ✅ Perfil manual (Astra H Z16XEP gasolina): throttle + MAF + RPM + vel
+    // ✅ Perfil CVT (Qashqai): carga motor + MAF + RPM + vel
+    // ✅ Perfil TDI manual (Toledo 1.6 TDI): carga motor + MAF + RPM + vel (sen acelerador, valores invertidos en TDI)
+    const _perfilCutoff = window._vehiculoOBDActivo?.cutoffPerfil || 'manual';
+    let cutoffDetectado = false;
+
+    if(_perfilCutoff === 'cvt') {
+      cutoffDetectado = (obdRpmActual > 900 &&
          obdEngineLoadActual !== null && obdEngineLoadActual < 12 &&
          obdMafActual < 13 &&
-         obdVelActual > 5)
-      : (obdRpmActual > 1000 &&
+         obdVelActual > 5);
+    } else if(_perfilCutoff === 'tdi-manual') {
+      // TDI Manual: en retención o motor corta inyección
+      // RPM por riba do ralentí (~800), carga motor baixa, MAF baixo
+      // NON usamos acelerador porque no TDI marca ~88% en reposo
+      cutoffDetectado = (obdRpmActual > 1000 &&
+         obdEngineLoadActual !== null && obdEngineLoadActual < 18 &&
+         obdMafActual > 0 && obdMafActual < 8 &&
+         obdVelActual > 5);
+    } else if(_perfilCutoff === 'truck-powershift') {
+      // Camión PowerShift (Actros OM471 12.8L)
+      // Retención real: RPM altas (marcha engranada, motor frena) + carga baixa + movéndose
+      // Excluír punto muerto PowerShift: RPM ~550-650 = ralentí = NON é corte
+      // O OM471 en ralentí ten MAF ~15-25 g/s, en retención debería baixar
+      // RPM > 800 garante que non estamos en ralentí de punto muerto (~550-600)
+      cutoffDetectado = (obdRpmActual > 800 &&
+         obdEngineLoadActual !== null && obdEngineLoadActual < 15 &&
+         obdMafActual > 0 && obdMafActual < 30 &&
+         obdVelActual > 8);
+    } else {
+      cutoffDetectado = (obdRpmActual > 1000 &&
          obdThrottleActual < 8 &&
          obdMafActual < 6 &&
          obdVelActual > 5);
+    }
 
-// Anti-rebote: activar cutoff só se se mantén 4 ciclos consecutivos (~2s)
+    // Debug strip: actualizar valores en tempo real (só visible con TDI)
+    const _dbgEl = document.getElementById('dash-cutoff-debug');
+    if(_dbgEl && (_perfilCutoff === 'tdi-manual' || _perfilCutoff === 'truck-powershift')) {
+      _dbgEl.style.display = 'block';
+      const _d = id => { const e=document.getElementById(id); if(e) return e; return {textContent:'',style:{}}; };
+      _d('dbg-rpm').textContent = obdRpmActual;
+      _d('dbg-maf').textContent = obdMafActual.toFixed(1);
+      _d('dbg-thr').textContent = obdThrottleActual.toFixed(0);
+      _d('dbg-load').textContent = obdEngineLoadActual !== null ? obdEngineLoadActual : '—';
+      _d('dbg-vel').textContent = obdVelActual;
+      const _dbgEst = document.getElementById('dbg-cutoff-estado');
+      if(_dbgEst) {
+        _dbgEst.textContent = cutoffDetectado ? '✓ CORTE' : '✗ NON';
+        _dbgEst.style.background = cutoffDetectado ? 'rgba(62,207,130,.2)' : 'rgba(232,85,85,.15)';
+        _dbgEst.style.color = cutoffDetectado ? 'var(--green)' : 'var(--red)';
+      }
+    } else if(_dbgEl) {
+      _dbgEl.style.display = 'none';
+    }
+
+// Anti-rebote: activar cutoff só se se mantén 2 ciclos consecutivos (~1s)
 if(!window._cutoffDebounce) window._cutoffDebounce = { count: 0, active: false };
 
 if(cutoffDetectado) {
